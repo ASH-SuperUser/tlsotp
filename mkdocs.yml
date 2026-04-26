@@ -1,0 +1,64 @@
+site_name: TLSOTP Documentation
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Examples: examples.md
+  - API:
+      - Core: api/core.md
+      - Interface: api/interface.md
+      - Init: api/__init__.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]   # 👈 IMPORTANT (points to your code)
+          options:
+            docstring_style: google   # or numpy if you use that
+            show_root_heading: true
+            show_source: true
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
