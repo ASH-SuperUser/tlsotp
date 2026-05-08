@@ -31,7 +31,7 @@ keywords = [
 
 classifiers = [
     # Status
-    Development Status :: 5 - Production/Stable,
+    "Development Status :: 5 - Production/Stable",
 
     # Audience
     "Intended Audience :: Developers",
