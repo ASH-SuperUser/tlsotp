@@ -1,8 +1,20 @@
 from .core import get_OTP
 import secrets
+import json
 
 
 def key_gen(length=32):
+    """Generate a random secret key string.
+
+    Uses Python's `secrets` module to generate a cryptographically
+    secure URL-safe token.
+
+    Args:
+        length (int): Approximate number of random bytes to use.
+
+    Returns:
+        str: URL-safe random secret key.
+    """
     return secrets.token_urlsafe(length)
 
 
@@ -19,6 +31,41 @@ def get_data_dict(
         password_string: str | None = None,
         algorithm: int | str = 0
     ) -> dict:
+    """Validate OTP configuration parameters and build a data dictionary.
+
+    Performs validation for:
+    - OTP mode
+    - OTP length
+    - Time binning
+    - Location configuration
+    - Password configuration
+    - Hash algorithm
+
+    Returns a normalized dictionary compatible with `get_OTP`
+    and related helper functions.
+
+    Args:
+        main_key (str): Secret key used for OTP generation.
+        otp_mode (int): OTP format mode:
+            - 0: digits only
+            - 1: alphabets only
+            - 2: alphanumeric
+        n_chars (int): Length of OTP.
+        time_binning (int): Time window in seconds.
+        location_mode (int): Location encoding mode.
+        latitude (float | None): Latitude coordinate.
+        longitude (float | None): Longitude coordinate.
+        iso3_code (str | None): ISO3 country code.
+        password_str_mode (int): Password encoding mode.
+        password_string (str | None): Optional password string.
+        algorithm (int | str): Hash algorithm identifier.
+
+    Returns:
+        dict: Validated OTP configuration dictionary.
+
+    Raises:
+        ValueError: If any argument is invalid.
+    """
     # ----------- BASIC VALIDATIONS -----------
 
     if not isinstance(main_key, str) or not main_key:
@@ -92,6 +139,24 @@ def get_data_dict(
 
 
 def get_OTP_from_dict(data_dict: dict) -> str:
+    """Generate an OTP from a configuration dictionary.
+
+    Accepts a dictionary compatible with `get_data_dict`,
+    applies default values for missing keys, and forwards
+    the configuration to `get_OTP`.
+
+    Unknown keys are ignored.
+
+    Args:
+        data_dict (dict): OTP configuration dictionary.
+
+    Returns:
+        str: Generated OTP.
+
+    Raises:
+        ValueError: If `data_dict` is invalid or `main_key`
+            is missing.
+    """
     if not isinstance(data_dict, dict):
         raise ValueError("data_dict must be a dictionary")
 
@@ -151,3 +216,91 @@ def get_OTP_from_dict(data_dict: dict) -> str:
     )
 
 
+def get_shareable_dict(data_dict: dict) -> dict:
+    """Create a minimal shareable OTP configuration dictionary.
+
+    Removes sensitive or runtime-specific values such as:
+    - latitude
+    - longitude
+    - password string
+
+    The resulting dictionary can safely be serialized and shared.
+
+    Args:
+        data_dict (dict): Full OTP configuration dictionary.
+
+    Returns:
+        dict: Reduced shareable configuration dictionary.
+
+    Raises:
+        ValueError: If the input dictionary is invalid.
+    """
+    validated = get_data_dict(**data_dict)
+
+    return {
+        'main_key': validated['main_key'],
+        'otp_mode': validated['otp_mode'],
+        'n_chars': validated['n_chars'],
+        'time_binning': validated['time_binning'],
+        'location_mode': validated['location_mode'],
+        'password_str_mode': validated['password_str_mode'],
+        'algorithm': validated['algorithm']
+    }
+
+
+def get_shareable_str(data_dict: dict) -> str:
+    """Serialize a shareable OTP configuration into JSON.
+
+    Converts the output of `get_shareable_dict` into a JSON string
+    suitable for storage or transmission.
+
+    Args:
+        data_dict (dict): Full OTP configuration dictionary.
+
+    Returns:
+        str: JSON-encoded shareable configuration string.
+    """
+    return json.dumps(get_shareable_dict(data_dict))
+
+
+def get_OTP_from_shareable_str(
+    shareable_str: str,
+    override_dict: dict | None = None,
+    adder_dict: dict | None = None
+) -> str:
+    """Generate an OTP from a serialized shareable configuration.
+
+    Decodes a JSON configuration string, optionally overrides
+    existing values, optionally adds missing values, and then
+    generates the OTP.
+
+    `override_dict` replaces existing keys.
+
+    `adder_dict` only inserts keys that do not already exist.
+
+    Args:
+        shareable_str (str): JSON-encoded shareable configuration.
+        override_dict (dict | None): Values to forcibly override.
+        adder_dict (dict | None): Values to add only if missing.
+
+    Returns:
+        str: Generated OTP.
+
+    Raises:
+        ValueError: If the decoded JSON is not a dictionary.
+        json.JSONDecodeError: If `shareable_str` is invalid JSON.
+    """
+    decoded = json.loads(shareable_str)
+
+    if not isinstance(decoded, dict):
+        raise ValueError("shareable_str must decode to a dictionary")
+
+    if override_dict is not None:
+        decoded.update(override_dict)
+
+    if adder_dict is not None:
+        for key, value in adder_dict.items():
+            if key not in decoded:
+                decoded[key] = value
+
+    return get_OTP_from_dict(decoded)
