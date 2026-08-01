@@ -1,6 +1,6 @@
 # Interface API
 
-This module provides the user-facing interface for TLSOTP.
+This module provides the main user-facing API for TLSOTP.
 
 ::: tlsotp.interface
     options:

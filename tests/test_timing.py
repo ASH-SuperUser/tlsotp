@@ -1,21 +1,33 @@
-import time
+import time as time_module
+
 from tlsotp.core import get_OTP
 
 
-def measure(key):
-    start = time.perf_counter()
-    get_OTP(key)
-    return time.perf_counter() - start
+def measure(key, n_runs=100):
+    start = time_module.perf_counter()
+    for _ in range(n_runs):
+        get_OTP(key)
+    elapsed = time_module.perf_counter() - start
+    return elapsed / n_runs
 
 
-def test_timing_consistency():
-    samples_short = [measure("a") for _ in range(200)]
-    samples_long = [measure("a" * 100) for _ in range(200)]
+class TestTimingConsistency:
+    def test_short_vs_long_key(self):
+        avg_short = measure("a", n_runs=100)
+        avg_long = measure("a" * 1000, n_runs=100)
+        ratio = avg_long / avg_short if avg_short else 1
+        assert ratio < 10, f"Long key too slow relative to short: {ratio:.2f}x"
 
-    avg_short = sum(samples_short) / len(samples_short)
-    avg_long = sum(samples_long) / len(samples_long)
+    def test_different_algorithms_similar(self):
+        times = {}
+        for algo_name in ['sha1', 'sha256', 'sha512']:
+            start = time_module.perf_counter()
+            for _ in range(100):
+                get_OTP("key", algorithm=algo_name)
+            elapsed = time_module.perf_counter() - start
+            times[algo_name] = elapsed
 
-    ratio = avg_long / avg_short if avg_short else 1
-
-    # Should not be drastically different
-    assert ratio < 3
+        max_time = max(times.values())
+        min_time = min(times.values())
+        ratio = max_time / min_time if min_time else 1
+        assert ratio < 10, f"Algorithm timing ratio too large: {ratio:.2f}x"

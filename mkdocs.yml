@@ -23,10 +23,13 @@ theme:
 nav:
   - Home: index.md
   - Quickstart: quickstart.md
+  - Modes & Arguments: modes-reference.md
   - Examples: examples.md
+  - TLSOTP vs TOTP: comparison-with-totp.md
   - API:
       - Core: api/core.md
       - Interface: api/interface.md
+      - Legacy: api/legacy.md
       - Init: api/__init__.md
 
 plugins:

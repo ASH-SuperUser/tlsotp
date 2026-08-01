@@ -1,10 +1,7 @@
-<!-- # Core API
-
-::: tlsotp.core -->
-
 # Core API
 
-This module contains the core OTP generation and validation logic.
+This module contains the low-level OTP generation primitives.
+Most users should use the functions in `tlsotp.interface` instead.
 
 ::: tlsotp.core
     options:

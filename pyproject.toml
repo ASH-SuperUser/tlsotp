@@ -2,10 +2,9 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-
 [project]
 name = "tlsotp"
-version = "0.2.0"
+version = "1.0.0"
 description = "Time, Location, and Secret-based OTP generation library"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -88,45 +87,22 @@ dev = [
     "mypy",
     "griffe",
 ]
-# dev = [
-#     "pytest",
-#     "hypothesis"
-# ]
 
 [project.urls]
 Homepage = "https://github.com/ASH-SuperUser/tlsotp"
 Repository = "https://github.com/ASH-SuperUser/tlsotp"
 Issues = "https://github.com/ASH-SuperUser/tlsotp/issues"
 
-
-# [tool.hatch.build.targets.wheel]
-# packages = ["src/tlsotp"]
-
-
-# [tool.hatch.metadata]
-# license-files = ["LICENSE"]
-
-
-# [tool.pytest.ini_options]
-# pythonpath = ["src"]
-
-
-
-# [tool.hatch.build]
-# sources = ["src"]
-
-# [tool.hatch.build.targets.wheel]
-# packages = ["tlsotp"]
-
-
-[tool.hatch.build]
-sources = ["src"]
-
 [tool.hatch.build.targets.wheel]
-packages = ["tlsotp"]
+packages = ["src/tlsotp"]
 
 [tool.hatch.metadata]
 license-files = ["LICENSE"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.8"
+files = ["src"]
+pretty = true

@@ -1,6 +1,11 @@
 # TLSOTP Package
 
-Root package for TLSOTP.
+The `tlsotp` package re‑exports everything from `tlsotp.interface`
+for convenience:
+
+```python
+from tlsotp import key_gen, get_OTP, verify_otp, ...
+```
 
 ::: tlsotp
     options:

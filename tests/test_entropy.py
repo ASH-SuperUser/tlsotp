@@ -1,7 +1,8 @@
 import math
 from collections import Counter
-from tlsotp.core import get_OTP
 from unittest.mock import patch
+
+from tlsotp.core import get_OTP
 
 
 def shannon_entropy(data: str) -> float:
@@ -10,34 +11,53 @@ def shannon_entropy(data: str) -> float:
     return -sum((c / total) * math.log2(c / total) for c in freq.values())
 
 
-# ---------------- FIXED DIGIT ENTROPY ----------------
-
-def test_entropy_digits():
+def _samples(count, otp_mode, n_chars, key_prefix="key_"):
     with patch("time.time", return_value=1000):
-        samples = []
-
-        for i in range(500):
-            otp = get_OTP(f"key_{i}", otp_mode=0, n_chars=6)
-            samples.append(otp)
-
-    joined = "".join(samples)
-    entropy = shannon_entropy(joined)
-
-    # realistic bound for deterministic PRF outputs
-    assert entropy > 3.0
+        return [get_OTP(f"{key_prefix}{i}", otp_mode=otp_mode, n_chars=n_chars) for i in range(count)]
 
 
-# ---------------- FIXED ALPHANUMERIC ENTROPY ----------------
+class TestEntropyDigits:
+    def test_entropy_digits_6chars(self):
+        samples = _samples(500, otp_mode=0, n_chars=6)
+        joined = "".join(samples)
+        entropy = shannon_entropy(joined)
+        assert entropy > 3.0, f"Digit entropy too low: {entropy}"
 
-def test_entropy_alphanumeric():
-    with patch("time.time", return_value=1000):
-        samples = []
+    def test_entropy_digits_8chars(self):
+        samples = _samples(500, otp_mode=0, n_chars=8)
+        joined = "".join(samples)
+        entropy = shannon_entropy(joined)
+        assert entropy > 3.0, f"Digit entropy too low: {entropy}"
 
-        for i in range(500):
-            otp = get_OTP(f"key_{i}", otp_mode=2, n_chars=6)
-            samples.append(otp)
 
-    joined = "".join(samples)
-    entropy = shannon_entropy(joined)
+class TestEntropyAlphanumeric:
+    def test_entropy_alphanumeric_6chars(self):
+        samples = _samples(500, otp_mode=2, n_chars=6)
+        joined = "".join(samples)
+        entropy = shannon_entropy(joined)
+        assert entropy > 4.0, f"Alphanumeric entropy too low: {entropy}"
 
-    assert entropy > 4.0
+    def test_entropy_alphanumeric_8chars(self):
+        samples = _samples(500, otp_mode=2, n_chars=8)
+        joined = "".join(samples)
+        entropy = shannon_entropy(joined)
+        assert entropy > 4.0, f"Alphanumeric entropy too low: {entropy}"
+
+
+class TestEntropyAlpha:
+    def test_entropy_alpha_6chars(self):
+        samples = _samples(500, otp_mode=1, n_chars=6)
+        joined = "".join(samples)
+        entropy = shannon_entropy(joined)
+        assert entropy > 4.0, f"Alpha entropy too low: {entropy}"
+
+
+class TestEntropyDistribution:
+    def test_digit_distribution_balanced(self):
+        samples = _samples(2000, otp_mode=0, n_chars=6)
+        joined = "".join(samples)
+        freq = Counter(joined)
+        total = len(joined)
+        for digit in '0123456789':
+            ratio = freq[digit] / total
+            assert 0.05 < ratio < 0.15, f"Digit {digit} frequency {ratio:.4f} outside expected range"

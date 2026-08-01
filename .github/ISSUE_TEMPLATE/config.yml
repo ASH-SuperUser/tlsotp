@@ -1,0 +1,8 @@
+# Configures the "New issue" page.
+
+blank_issues_enabled: false
+
+contact_links:
+  - name: 🛡️ Report a security vulnerability
+    url: https://github.com/ASH-SuperUser/tlsotp/security/advisories/new
+    about: Please report security issues privately — do not open a public issue. See SECURITY.md.
